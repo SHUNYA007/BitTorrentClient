@@ -64,3 +64,40 @@ class Decoder:
             ##code for a string input
             lenOfString=self.getLength()
             return self.getString(lenOfString)
+
+
+class Encoder:
+    def __init__(self,data):
+        self.data=data
+        self.index=-1
+        self.character=None
+
+
+    def startEncoding(self):
+        #start encoding if every element
+        return self.encode(self.data)
+
+    def encode(self,data):
+        if type(data) == bytes:
+            #handle byte data
+            return str(len(data)).encode()+data
+        elif type(data) == list:
+            #handle list data
+            benlist=b''
+            for item in data:
+                benlist += self.encode(item)
+            return b'l'+benlist+b'e'
+        elif type(data) == dict:
+            #handle dict data
+            bendict=b''
+            for key,value in data.items():
+                bendict += self.encode(key)+self.encode(value)
+            return b'd'+bendict+b'e'
+        elif type(data) == int:
+            #handle int type
+            return ('i'+str(data)+'e').encode()
+        elif type(data)== str:
+            #handle string type of data
+            return (str(len(data))+':'+data).encode()
+        else:
+            raise TypeError('This type of data is not supported in bencoding')
