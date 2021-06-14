@@ -6,7 +6,7 @@ class Decoder:
     def __init__(self,data):
         if not isinstance(data,bytes):
             raise TypeError('Argument is not of type "bytes" ')
-        self.data=data.decode() #converting bytes to string type
+        self.data=data
         self.index=-1
         self.character=None
 
@@ -15,16 +15,18 @@ class Decoder:
         if self.index>=len(self.data):
             self.character=None
         else:
-            self.character= self.data[self.index]
+            self.character= self.data[self.index:self.index+1]
+
     def getLength(self):
-        lenOfString=''
-        while self.character!=':':
+        lenOfString=b''
+        while self.character!=b':':
+
             lenOfString+=self.character
             self.getCharacter()
 
         return int(lenOfString)
     def getString(self,lenOfString):
-        output=''
+        output=b''
         for _ in range(lenOfString):
             self.getCharacter()
             output+=self.character
@@ -32,35 +34,46 @@ class Decoder:
         return output
 
     def decode(self):
-        self.getCharacter()
+
         if self.character == None:
-            raise EOFerror('Unexpected end of file')
-        elif self.character == 'i':
+            self.getCharacter()
+            if self.character==None:
+                raise EOFerror('Unexpected end of file')
+        if self.character == b'i':
             ##code for integerInput
             self.getCharacter()
-            output=''
-            while self.character!='e':
+            output=b''
+            while self.character!=b'e':
+
                 output+=self.character
                 self.getCharacter()
             return int(output)
-        elif self.character == 'd':
+        elif self.character == b'd':
             ##code for dictionary input
             output={}
-            while self.character!='e':
+            self.getCharacter()
+            while self.character!=b'e':
+
                 key=self.decode()
                 if key!=None:
+                    self.getCharacter()
                     value=self.decode()
                     output[key]=value
+
+                    self.getCharacter()
+
             return output
-        elif self.character == 'l':
+        elif self.character == b'l':
             ##code for list input
             output=[]
-            while self.character!='e':
+            self.getCharacter()
+            while self.character!=b'e':
                 item=self.decode()
                 if item!=None:
                     output.append(item)
+                    self.getCharacter()
             return output
-        elif self.character in '0123456789':
+        elif self.character in b'0123456789':
             ##code for a string input
             lenOfString=self.getLength()
             return self.getString(lenOfString)
@@ -80,7 +93,7 @@ class Encoder:
     def encode(self,data):
         if type(data) == bytes:
             #handle byte data
-            return str(len(data)).encode()+data
+            return str(len(data)).encode()+b':'+data
         elif type(data) == list:
             #handle list data
             benlist=b''
