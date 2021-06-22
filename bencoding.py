@@ -20,17 +20,20 @@ class Decoder:
     def getLength(self):
         lenOfString=b''
         while self.character!=b':':
-
-            lenOfString+=self.character
-            self.getCharacter()
-
+            if self.character:
+                lenOfString+=self.character
+                self.getCharacter()
+            else:
+                raise RuntimeError('No token found')
         return int(lenOfString)
     def getString(self,lenOfString):
         output=b''
         for _ in range(lenOfString):
             self.getCharacter()
-            output+=self.character
-
+            if self.character:
+                output+=self.character
+            else:
+                raise EOFError('Unexpected end of file, no token found')
         return output
 
     def decode(self):
@@ -38,15 +41,20 @@ class Decoder:
         if self.character == None:
             self.getCharacter()
             if self.character==None:
-                raise EOFerror('Unexpected end of file')
+                raise EOFError('Unexpected end of file')
         if self.character == b'i':
             ##code for integerInput
             self.getCharacter()
             output=b''
             while self.character!=b'e':
-
-                output+=self.character
-                self.getCharacter()
+                if self.character:
+                    if self.character.isdigit():
+                        output+=self.character
+                        self.getCharacter()
+                    elif not self.character.isdigit():
+                        raise TypeError('token {0} is not type int'.format(self.character))
+                else:
+                    raise EOFError('Unexpected endoffile')
             return int(output)
         elif self.character == b'd':
             ##code for dictionary input
@@ -77,7 +85,8 @@ class Decoder:
             ##code for a string input
             lenOfString=self.getLength()
             return self.getString(lenOfString)
-
+        else:
+            raise RuntimeError('Invalid token:',self.character)
 
 class Encoder:
     def __init__(self,data):
@@ -86,11 +95,11 @@ class Encoder:
         self.character=None
 
 
-    def startEncoding(self):
+    def encode(self):
         #start encoding if every element
-        return self.encode(self.data)
+        return self.encoding(self.data)
 
-    def encode(self,data):
+    def encoding(self,data):
         if type(data) == bytes:
             #handle byte data
             return str(len(data)).encode()+b':'+data
@@ -98,13 +107,13 @@ class Encoder:
             #handle list data
             benlist=b''
             for item in data:
-                benlist += self.encode(item)
+                benlist += self.encoding(item)
             return b'l'+benlist+b'e'
         elif type(data) == dict:
             #handle dict data
             bendict=b''
             for key,value in data.items():
-                bendict += self.encode(key)+self.encode(value)
+                bendict += self.encoding(key)+self.encoding(value)
             return b'd'+bendict+b'e'
         elif type(data) == int:
             #handle int type
