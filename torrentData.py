@@ -45,7 +45,7 @@ class torrent(object):
                 self.file_names.append({'name':file[b'path'][0].decode(),'length':file[b'length']})
                 self.total_length+=file[b'length']
 
-         else:
+        else:
             self.file_names.append({"path": folderName , "length": info[b'length']})
             self.total_length = info['length']
     def fetch_urls():
