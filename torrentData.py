@@ -3,6 +3,8 @@
 from hashlib import sha1
 from bencoding import Decoder,Encoder
 import os
+import random
+import time
 
 class torrent(object):
     """class to properly structutre torrent data"""
@@ -32,7 +34,7 @@ class torrent(object):
         self.handleFiles()
         self.number_of_pieces = math.ceil(self.total_length / self.piece_length)
         return self
-        
+
     def handleFiles():
         info=self.torrent_file[b'info']
         folderName=info[b'name']
@@ -46,4 +48,10 @@ class torrent(object):
          else:
             self.file_names.append({"path": folderName , "length": info[b'length']})
             self.total_length = info['length']
-    def
+    def fetch_urls():
+        if b'announce-list' in self.torrent_file:
+            return self.torrent_file[b'announce-list']
+        return [[self.torrent_file['announce']]]
+    def genrate_peer_id():
+        seed = str(time.time())
+        return hashlib.sha1(seed.encode('utf-8')).digest()
