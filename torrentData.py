@@ -1,12 +1,13 @@
-##Get torrent data from .torrent file
-##Store the data in a class
+"""Get torrent data from .torrent file
+Store the data in a class"""
 from hashlib import sha1
 from bencoding import Decoder,Encoder
 import os
 import random
 import time
+import math
 
-class torrent(object):
+class Torrent(object):
     """class to properly structutre torrent data"""
 
     def __init__(self,file_name):
@@ -28,14 +29,14 @@ class torrent(object):
             self.torrent_file=Decoder(contents).decode()
         self.piece_length = self.torrent_file[b'info'][b'piece length']
         self.pieces = self.torrent_file[b'info'][b'pieces']
-        self.info_hash=sha1(Encoder(self.torrent_file[b'info']).encode())
+        self.info_hash=sha1(Encoder(self.torrent_file[b'info']).encode()).digest()
         self.peer_id=self.genrate_peer_id()
         self.announce_list=self.fetch_urls()
         self.handleFiles()
         self.number_of_pieces = math.ceil(self.total_length / self.piece_length)
         return self
 
-    def handleFiles():
+    def handleFiles(self):
         info=self.torrent_file[b'info']
         folderName=info[b'name']
         if b'files' in info:
@@ -47,11 +48,11 @@ class torrent(object):
 
         else:
             self.file_names.append({"path": folderName , "length": info[b'length']})
-            self.total_length = info['length']
-    def fetch_urls():
+            self.total_length = info[b'length']
+    def fetch_urls(self):
         if b'announce-list' in self.torrent_file:
             return self.torrent_file[b'announce-list']
         return [[self.torrent_file['announce']]]
-    def genrate_peer_id():
+    def genrate_peer_id(self):
         seed = str(time.time())
-        return hashlib.sha1(seed.encode('utf-8')).digest()
+        return sha1(seed.encode('utf-8')).digest()
